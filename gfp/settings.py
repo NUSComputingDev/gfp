@@ -37,6 +37,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'scoreboard.apps.ScoreboardConfig',
+    'players.apps.PlayersConfig',
 ]
 
 MIDDLEWARE_CLASSES = [
