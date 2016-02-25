@@ -1,0 +1,19 @@
+{
+  "name": "NUS GFP",
+  "homepage": "https://github.com/NUSComputingDev/gfp",
+  "authors": [
+    "Syed Abdullah et al."
+  ],
+  "description": "Website/Game System for NUS Graduate Farewell Party",
+  "main": "",
+  "moduleType": [],
+  "license": "MIT",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ]
+}
