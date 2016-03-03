@@ -1,0 +1,13 @@
+<html>
+{% for value in games %}
+Game Name: {{ value.name }}
+<table>
+	{% for score in value.score_set.all %}
+	<tr>
+    <td>NAME: {{ score.player.user.username }}</td>
+		<td>SCORE: {{ score.score }} </td>
+	</tr>
+	{% endfor %}
+</table>
+{% endfor %}
+</html>

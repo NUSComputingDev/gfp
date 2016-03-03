@@ -4,9 +4,14 @@ from django.db import models
 class Game(models.Model):
     name = models.CharField(max_length=255)
     is_active = models.BooleanField()
+    def __str__(self):
+        return '%s' % (self.name)
 
 # Score for the Game
 class Score(models.Model):
     player = models.ForeignKey('players.Player', on_delete=models.CASCADE)
     game = models.ForeignKey('Game', on_delete=models.CASCADE)
     score = models.IntegerField(default=0)
+
+    class Meta:
+        ordering = ['-score']
