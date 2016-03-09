@@ -1,13 +1,19 @@
-<html>
+{% extends "index.html" %}
+
+{% block body %}
 {% for value in games %}
-Game Name: {{ value.name }}
-<table>
+<h1>Game Name: {{ value.name }}</h1>
+<table class="table table-bordered">
 	{% for score in value.score_set.all %}
+	<thead>
+		<td>NAME</td>
+		<td>SCORE</td>
+	</thead>
 	<tr>
-    <td>NAME: {{ score.player.user.username }}</td>
-		<td>SCORE: {{ score.score }} </td>
+    <td>{{ score.player.user.username }}</td>
+		<td>{{ score.score }} </td>
 	</tr>
 	{% endfor %}
 </table>
 {% endfor %}
-</html>
+{% endblock %}
