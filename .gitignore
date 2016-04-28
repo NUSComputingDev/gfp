@@ -70,3 +70,6 @@ target/
 
 # Django
 db.sqlite3
+
+# node.js
+node_modules
