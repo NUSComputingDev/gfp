@@ -13,6 +13,15 @@ class GameSession(models.Model):
     game_master = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     game = models.ForeignKey('Game', on_delete=models.CASCADE)
 
+# Scoring for a particular rank in game_master
+class GamePrize(models.Model):
+    game = models.ForeignKey('Game', on_delete=models.CASCADE)
+    rank = models.IntegerField(default=1)
+    score = models.IntegerField(default=0)
+
+    class Meta:
+        unique_together = ("game", "rank")
+
 # Score for a GameSession
 class Score(models.Model):
     game_session = models.ForeignKey('GameSession', on_delete=models.CASCADE)

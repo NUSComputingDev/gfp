@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Game, Score, GameSession
+from .models import Game, Score, GameSession, GamePrize
 from django.contrib.contenttypes.models import ContentType
 from django.core.urlresolvers import reverse
 from django.utils.safestring import mark_safe
@@ -24,8 +24,12 @@ class GameSessionAdmin(admin.ModelAdmin):
         ScoreInline,
     ]
 
+class GamePrizeInline(admin.TabularInline):
+    model = GamePrize
+
 class GameAdmin(admin.ModelAdmin):
     inlines = [
+        GamePrizeInline,
         GameSessionInline,
     ]
 
