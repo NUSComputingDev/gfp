@@ -6,6 +6,7 @@ from django.utils.safestring import mark_safe
 
 class ScoreInline(admin.TabularInline):
     model = Score
+    exclude = ('score', )
 
 class GameSessionInline(admin.TabularInline):
     model = GameSession

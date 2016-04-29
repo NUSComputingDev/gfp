@@ -26,7 +26,9 @@ class GamePrize(models.Model):
 class Score(models.Model):
     game_session = models.ForeignKey('GameSession', on_delete=models.CASCADE)
     player = models.ForeignKey('players.Player', on_delete=models.CASCADE)
+    position = models.IntegerField(default=0)
     score = models.IntegerField(default=0)
 
     class Meta:
-        ordering = ['-score']
+        unique_together = ("game_session", "position")
+        ordering = ['position']
