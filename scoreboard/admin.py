@@ -1,4 +1,5 @@
 from django.contrib import admin
+from django.db.models import Q
 from .models import Game, Score, GameSession, GamePrize
 from django.contrib.contenttypes.models import ContentType
 from django.core.urlresolvers import reverse
@@ -6,7 +7,7 @@ from django.utils.safestring import mark_safe
 
 class ScoreInline(admin.TabularInline):
     model = Score
-    exclude = ('score', )
+    readonly_fields = ('score', )
 
 class GameSessionInline(admin.TabularInline):
     model = GameSession
@@ -24,6 +25,18 @@ class GameSessionAdmin(admin.ModelAdmin):
     inlines = [
         ScoreInline,
     ]
+
+    def save_formset(self, request, form, formset, change):
+        if formset.model == Score:
+            instances = formset.save(commit=False)
+            for obj in formset.deleted_objects:
+                obj.delete()
+            for instance in instances:
+                q = GamePrize.objects.filter(Q(rank=instance.position) & Q(game=instance.game_session.game))
+                if q.exists():
+                    instance.score = q[0].score
+                instance.save()
+            formset.save_m2m()
 
 class GamePrizeInline(admin.TabularInline):
     model = GamePrize
