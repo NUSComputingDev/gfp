@@ -13,11 +13,17 @@ class GameSession(models.Model):
     game_master = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     game = models.ForeignKey('Game', on_delete=models.CASCADE)
 
+    def __str__(self):
+        return '%s #%d' % (self.game, self.id)
+
 # Scoring for a particular rank in game_master
 class GamePrize(models.Model):
     game = models.ForeignKey('Game', on_delete=models.CASCADE)
     rank = models.IntegerField(default=1)
     score = models.IntegerField(default=0)
+
+    def __str__(self):
+        return '%d' % (self.rank)
 
     class Meta:
         unique_together = ("game", "rank")
