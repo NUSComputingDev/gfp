@@ -11,7 +11,7 @@ class PlayerAdmin(admin.ModelAdmin):
 
     def total_points(self, instance):
         total = 0
-        games = Score.objects.filter(player=instance)
+        games = instance.score_set.all()
         for game in games:
             total += game.score
         return total
