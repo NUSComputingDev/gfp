@@ -7,7 +7,13 @@ from django.utils.safestring import mark_safe
 
 class ScoreInline(admin.TabularInline):
     model = Score
-    readonly_fields = ('score', )
+
+    # Allow superuser to add score
+    def get_readonly_fields(self, request, obj=None):
+        if request.user.is_superuser:
+            return super(ScoreInline, self).get_readonly_fields(request, obj)
+        else:
+            return ('score')
 
 class GameSessionInline(admin.TabularInline):
     model = GameSession
@@ -34,7 +40,9 @@ class GameSessionAdmin(admin.ModelAdmin):
             for instance in instances:
                 q = GamePrize.objects.filter(Q(rank=instance.position) & Q(game=instance.game_session.game))
                 if q.exists():
-                    instance.score = q[0].score
+                    # Prevent tampering of score for non-superusers
+                    if instance.score <= 0 or not request.user.is_superuser:
+                        instance.score = q[0].score
                 instance.save()
             formset.save_m2m()
 
