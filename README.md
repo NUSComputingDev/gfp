@@ -1,5 +1,6 @@
 # NUS SoC GFP
 [![Build Status](https://travis-ci.org/NUSComputingDev/gfp.svg?branch=master)](https://travis-ci.org/NUSComputingDev/gfp)
+
 This is a repository for the NUS School of Computing Graduate Farewell Party (GFP) system
 
 ## Installation
