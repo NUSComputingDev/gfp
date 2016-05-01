@@ -10,6 +10,13 @@ This is a repository for the NUS School of Computing Graduate Farewell Party (GF
 * Django 1.9.2
 
 ### Development
+Install all dependencies using `pip`:
+```bash
+$ pip install -r requirements.txt
+```
+
+Optional: You may find it convenient to install the dependencies in a [virtualenv](https://pypi.python.org/pypi/virtualenv), to prevent any conflicts.
+
 Just run the following commands
 ```bash
 $ manage.py migrate
