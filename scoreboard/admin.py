@@ -13,7 +13,7 @@ class ScoreInline(admin.TabularInline):
         if request.user.is_superuser:
             return super(ScoreInline, self).get_readonly_fields(request, obj)
         else:
-            return ('score')
+            return ('score', )
 
 class GameSessionInline(admin.TabularInline):
     model = GameSession
@@ -31,6 +31,17 @@ class GameSessionAdmin(admin.ModelAdmin):
     inlines = [
         ScoreInline,
     ]
+
+    def get_readonly_fields(self, request, obj=None):
+        base_readonly = super(GameSessionAdmin, self).get_readonly_fields(request, obj)
+        if not request.user.is_superuser:
+            base_readonly = base_readonly + ('game_master', )
+        return base_readonly
+
+    def save_model(self, request, obj, form, change):
+        if not request.user.is_superuser:
+            obj.game_master = request.user
+        obj.save()
 
     def save_formset(self, request, form, formset, change):
         if formset.model == Score:
