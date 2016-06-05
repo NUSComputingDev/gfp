@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.db.models import Q
-from .models import Game, Score, GameSession, GamePrize
+from .models import Game, Score, GameSession, GamePrize, Guess, AggregatedScore, PartialScore
 from django.contrib.contenttypes.models import ContentType
 from django.core.urlresolvers import reverse
 from django.utils.safestring import mark_safe
@@ -15,6 +15,17 @@ class ScoreInline(admin.TabularInline):
         else:
             return ('score', )
 
+class AggregatedScoreInline(admin.TabularInline):
+    model = AggregatedScore
+    fields = ('player', 'average_score', 'cumulative_score', )
+    readonly_fields = ('average_score', 'cumulative_score', )
+
+    def cumulative_score(self, instance):
+        ct = ContentType.objects.get_for_model(instance)
+        url = reverse('admin:%s_%s_change' % (ct.app_label, ct.model), args=(instance.id,))
+        uri = '<a href="%s">%s</a>' % (url, instance.total_score())
+        return mark_safe(uri)
+
 class GameSessionInline(admin.TabularInline):
     model = GameSession
     readonly_fields = ('total_participants', )
@@ -27,10 +38,41 @@ class GameSessionInline(admin.TabularInline):
 
     total_participants.allow_tags = True
 
+class GuessInline(admin.TabularInline):
+    model = Guess
+
+class PartialScoreInline(admin.TabularInline):
+    model = PartialScore
+
+class AggregatedScoreAdmin(admin.ModelAdmin):
+    model = AggregatedScore
+    inlines = [
+        PartialScoreInline,
+    ]
+
+    list_display = ('player_name', 'game', 'total_score')
+
 class GameSessionAdmin(admin.ModelAdmin):
     inlines = [
         ScoreInline,
     ]
+
+    def get_inline_instances(self, request, obj=None):
+        inline_instances = []
+        inlines = []
+        if obj is not None and obj.game.game_type == obj.game.JUDGE:
+            inlines.append(AggregatedScoreInline)
+        else:
+            inlines.append(ScoreInline)
+
+        if obj is not None and obj.game.game_type == obj.game.GUESSING:
+            inlines.append(GuessInline)
+
+        for inline_class in inlines:
+            inline = inline_class(self.model, self.admin_site)
+            inline_instances.append(inline)
+
+        return inline_instances
 
     def get_readonly_fields(self, request, obj=None):
         base_readonly = super(GameSessionAdmin, self).get_readonly_fields(request, obj)
@@ -56,6 +98,9 @@ class GameSessionAdmin(admin.ModelAdmin):
                         instance.score = q[0].score
                 instance.save()
             formset.save_m2m()
+        else:
+            if formset.is_valid():
+                formset.save()
 
 class GamePrizeInline(admin.TabularInline):
     model = GamePrize
@@ -68,3 +113,4 @@ class GameAdmin(admin.ModelAdmin):
 
 admin.site.register(Game, GameAdmin)
 admin.site.register(GameSession, GameSessionAdmin)
+admin.site.register(AggregatedScore, AggregatedScoreAdmin)
