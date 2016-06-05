@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.db.models import Q
-from .models import Game, Score, GameSession, GamePrize, AggregatedScore, PartialScore
+from .models import Game, Score, GameSession, Guess, GamePrize, AggregatedScore, PartialScore
 from django.contrib.contenttypes.models import ContentType
 from django.core.urlresolvers import reverse
 from django.utils.safestring import mark_safe
