@@ -1,4 +1,5 @@
 from django.db import models
+from django.db.models import Q
 from django.conf import settings
 
 # Model for Games
@@ -25,7 +26,7 @@ class Game(models.Model):
 class GameSession(models.Model):
     game_master = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     game = models.ForeignKey('Game', on_delete=models.CASCADE)
-
+    guess_value = models.PositiveIntegerField(default=0)
     def __str__(self):
         return '%s #%d' % (self.game, self.id)
 
@@ -105,7 +106,13 @@ class PartialScore(models.Model):
 class Guess(models.Model):
     player = models.ForeignKey('players.Player', on_delete=models.CASCADE)
     guess = models.PositiveIntegerField(default=0)
-    game_session = models.ForeignKey('GameSession', on_delete=models.CASCADE)
+    game_session = models.ForeignKey('GameSession',
+                                     on_delete=models.CASCADE,
+                                     limit_choices_to=Q(game__game_type=Game.GUESSING))
 
     def __str__(self):
         return '%s: %d' % (self.player, self.guess)
+
+    class Meta:
+        unique_together = ("game_session", "player")
+        verbose_name_plural = 'Guesses'
