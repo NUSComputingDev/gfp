@@ -1,0 +1,15 @@
+{% extends "index.html" %}
+{% load addcss %}
+
+{% block body %}
+<div class="jumbotron">
+  <h2>Place your guesses here!</h2>
+  <form method="POST" action="">
+    {% csrf_token %}
+   <div class="form-group">
+     {{ form.guess | addcss:"form-control input-lg"}}
+   </div>
+   <button type="submit" class="btn btn-default">Submit</button>
+  </form>
+</div>
+{% endblock %}

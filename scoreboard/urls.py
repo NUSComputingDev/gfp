@@ -5,4 +5,5 @@ from . import views
 
 urlpatterns = [
     url(r'^$', views.scoreboard_view),
+    url(r'^guessing$', views.guess_view),
 ]
