@@ -17,17 +17,17 @@ class ScoreInline(admin.TabularInline):
 
 class AggregatedScoreInline(admin.TabularInline):
     model = AggregatedScore
-    fields = ('player', 'average_score', 'cumulative_score', )
-    readonly_fields = ('average_score', 'cumulative_score', )
+    fields = ('player', 'average_score', 'score', 'view_breakdown' )
+    readonly_fields = ('average_score', 'score', 'view_breakdown' )
 
-    def cumulative_score(self, instance):
+    def view_breakdown(self, instance):
         ct = ContentType.objects.get_for_model(instance)
         url = reverse('admin:%s_%s_change' % (ct.app_label, ct.model), args=(instance.id,))
         if instance.id is not None:
-            uri = '<a href="%s">%s</a>' % (url, instance.total_score())
+            uri = '<a href="%s">View Breakdown</a>' % (url,)
             return mark_safe(uri)
         else:
-            return '0'
+            return '-'
 
 class GameSessionInline(admin.TabularInline):
     model = GameSession
@@ -36,7 +36,8 @@ class GameSessionInline(admin.TabularInline):
     def total_participants(self, instance):
         ct = ContentType.objects.get_for_model(instance)
         url = reverse('admin:%s_%s_change' % (ct.app_label, ct.model), args=(instance.id,))
-        uri = '<a href="%s">%s</a>' % (url, instance.score_set.count())
+        score = instance.score_set.count() or instance.aggregatedscore_set.count()
+        uri = '<a href="%s">%s</a>' % (url, score)
         return mark_safe(uri)
 
     total_participants.allow_tags = True
@@ -64,7 +65,8 @@ class AggregatedScoreAdmin(admin.ModelAdmin):
         PartialScoreInline,
     ]
 
-    list_display = ('player_name', 'game', 'total_score')
+    list_display = ('player_name', 'game', 'score', 'total_score')
+    readonly_fields = ('score', )
 
 class GameSessionAdmin(admin.ModelAdmin):
     inlines = [
