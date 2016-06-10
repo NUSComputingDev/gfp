@@ -12,14 +12,6 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RemoveField(
-            model_name='aggregategamesession',
-            name='gamesession_ptr',
-        ),
-        migrations.RemoveField(
-            model_name='aggregategamesession',
-            name='players',
-        ),
         migrations.DeleteModel(
             name='AggregateGameSession',
         ),
