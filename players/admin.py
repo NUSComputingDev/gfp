@@ -32,7 +32,7 @@ class PlayerAdmin(admin.ModelAdmin):
 
 def annotate_sum(qs, related_modelclass, field_name, annotation_name):
         raw_query = """
-          SELECT SUM({field}) FROM {model} AS model
+          SELECT COALESCE(SUM({field}), 0) FROM {model} AS model
             WHERE model.player_id = players_player.id
         """.format(
             field = field_name,
