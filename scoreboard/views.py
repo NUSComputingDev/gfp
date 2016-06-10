@@ -18,6 +18,8 @@ def guess_view(request, id):
 	form = GuessingForm()
 	if associated_game_session.game.game_type != Game.GUESSING:
 		return HttpResponseForbidden()
+
+	game_name = associated_game_session.game.name
 	if request.method == 'POST':
 		try:
 			current_user_player = request.user.player
@@ -30,10 +32,9 @@ def guess_view(request, id):
 			if form.is_valid():
 				new_guess = form.save()
 				messages.info(request, 'Your guess has been successfully recorded!')
-				return redirect('guessing-form', id=id)
 			else:
 				messages.error(request, 'Something went wrong!')
-				return redirect('guessing-form')
 		else:
 			messages.warning(request, 'You are most likely a cheeky admin!')
-	return render(request, 'scoreboard/guesser.html', {'form': form})
+	return render(request, 'scoreboard/guesser.html', {'form': form,
+													   'game': game_name})

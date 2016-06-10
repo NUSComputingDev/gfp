@@ -3,7 +3,7 @@
 
 {% block body %}
 <div class="jumbotron">
-  <h2>Place your guesses here!</h2>
+  <h2>{{ game }}</h2>
   <form method="POST" action="">
     {% csrf_token %}
    <div class="form-group">
