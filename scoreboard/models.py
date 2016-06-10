@@ -31,10 +31,6 @@ class GameSession(models.Model):
     def __str__(self):
         return '%s #%d' % (self.game, self.id)
 
-# Represents a Game Session with aggregate Scoring
-class AggregateGameSession(GameSession):
-    players = models.ManyToManyField('players.Player')
-
 # Scoring for a particular rank in game_master
 class GamePrize(models.Model):
     game = models.ForeignKey('Game', on_delete=models.CASCADE)
