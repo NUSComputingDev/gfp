@@ -19,6 +19,7 @@ class Game(models.Model):
     )
     name = models.CharField(max_length=255)
     is_active = models.BooleanField()
+    display_leaderboard = models.BooleanField(default=True)
     def __str__(self):
         return '%s' % (self.name)
 
@@ -106,6 +107,7 @@ class PartialScore(models.Model):
 class Guess(models.Model):
     player = models.ForeignKey('players.Player', on_delete=models.CASCADE)
     guess = models.PositiveIntegerField(default=0)
+    guessed_on = models.DateField(auto_now=True)
     game_session = models.ForeignKey('GameSession',
                                      on_delete=models.CASCADE,
                                      limit_choices_to=Q(game__game_type=Game.GUESSING))
