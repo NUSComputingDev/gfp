@@ -1,9 +1,13 @@
 from django.db import models
 from django.db.models import Q
 from django.conf import settings
+from django.core.exceptions import ValidationError
+from django.core.exceptions import NON_FIELD_ERRORS
 
-# Model for Games
 class Game(models.Model):
+    """
+    Model to represent a Game
+    """
     NORMAL = 'NM'
     GUESSING = 'GS'
     JUDGE = 'JD'
@@ -23,16 +27,20 @@ class Game(models.Model):
     def __str__(self):
         return '%s' % (self.name)
 
-# Represents a Game Session for a Game!
 class GameSession(models.Model):
+    """
+    Represents a game session for a Game
+    """
     game_master = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     game = models.ForeignKey('Game', on_delete=models.CASCADE)
     guess_value = models.PositiveIntegerField(default=0)
     def __str__(self):
         return '%s #%d' % (self.game, self.id)
 
-# Scoring for a particular rank in game_master
 class GamePrize(models.Model):
+    """
+    Stores default scoring for a particular ranking in a game session
+    """
     game = models.ForeignKey('Game', on_delete=models.CASCADE)
     rank = models.IntegerField(default=1)
     score = models.IntegerField(default=0)
@@ -43,8 +51,10 @@ class GamePrize(models.Model):
     class Meta:
         unique_together = ("game", "rank")
 
-# Abstract base model for Scoring
-class AbstractScore(models.Model):
+class Score(models.Model):
+    """
+    Base Model for Scoring
+    """
     game_session = models.ForeignKey('GameSession', on_delete=models.CASCADE)
     player = models.ForeignKey('players.Player', on_delete=models.CASCADE)
     score = models.IntegerField(default=0)
@@ -52,18 +62,34 @@ class AbstractScore(models.Model):
     def __str__(self):
         return "%s's score for %s" % (self.player, self.game_session.game)
 
-    class Meta:
-        abstract = True
-
-# Score for a GameSession
-class Score(AbstractScore):
+class SingleScore(Score):
+    """
+    Classic scoring system: you get what you are given
+    """
     position = models.IntegerField(default=0)
 
+    def validate_unique(self, *args, **kwargs):
+        """
+        Validate that the score has a unique position for the game session
+        """
+        super(SingleScore, self).validate_unique(*args, **kwargs)
+        unique_args = {"position": self.position,
+                       "game_session":self.game_session}
+        print("pk: {}".format(self.pk))
+        if self.__class__.objects.filter(**unique_args).exclude(pk=self.pk).exists():
+            raise ValidationError(
+                        {
+                            NON_FIELD_ERRORS: ['Position must be unique!'],
+                        }
+                    )
+
     class Meta:
-        unique_together = ("game_session", "position")
         ordering = ['position']
 
-class AggregatedScore(AbstractScore):
+class AggregatedScore(Score):
+    """
+    Scoring system that is percentage based
+    """
     def game(self):
         return self.game_session.game
 
@@ -88,6 +114,9 @@ class AggregatedScore(AbstractScore):
 
 # Score for an aggregated GameSession
 class PartialScore(models.Model):
+    """
+    A score from a game master that contributes to the AggregatedScore
+    """
     aggregated_score = models.ForeignKey('AggregatedScore', on_delete=models.CASCADE)
     percentage = models.PositiveSmallIntegerField(default=0)
     game_master = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
@@ -101,6 +130,9 @@ class PartialScore(models.Model):
         unique_together = ("aggregated_score", "game_master")
 
 class Guess(models.Model):
+    """
+    Model to store player's guesses for guessing games
+    """
     player = models.ForeignKey('players.Player', on_delete=models.CASCADE)
     guess = models.PositiveIntegerField(default=0)
     guessed_on = models.DateField(auto_now=True)

@@ -1,17 +1,17 @@
 from django.contrib import admin
 from django.db.models import Q, F
-from .models import Game, Score, GameSession, Guess, GamePrize, AggregatedScore, PartialScore
+from .models import Game, Score, GameSession, Guess, GamePrize, AggregatedScore, PartialScore, SingleScore
 from django.contrib.contenttypes.models import ContentType
 from django.core.urlresolvers import reverse
 from django.utils.safestring import mark_safe
 
-class ScoreInline(admin.TabularInline):
-    model = Score
+class SingleScoreInline(admin.TabularInline):
+    model = SingleScore
 
     # Allow superuser to add score
     def get_readonly_fields(self, request, obj=None):
         if request.user.is_superuser:
-            return super(ScoreInline, self).get_readonly_fields(request, obj)
+            return super(SingleScoreInline, self).get_readonly_fields(request, obj)
         else:
             return ('score', )
 
@@ -23,7 +23,7 @@ class AggregatedScoreInline(admin.TabularInline):
     def view_breakdown(self, instance):
         ct = ContentType.objects.get_for_model(instance)
         url = reverse('admin:%s_%s_change' % (ct.app_label, ct.model), args=(instance.id,))
-        if instance.id is not None:
+        if instance.id:
             uri = '<a href="%s">View Breakdown</a>' % (url,)
             return mark_safe(uri)
         else:
@@ -36,8 +36,11 @@ class GameSessionInline(admin.TabularInline):
     def total_participants(self, instance):
         ct = ContentType.objects.get_for_model(instance)
         url = reverse('admin:%s_%s_change' % (ct.app_label, ct.model), args=(instance.id,))
-        score = instance.score_set.count() or instance.aggregatedscore_set.count()
-        uri = '<a href="%s">%s</a>' % (url, score)
+        score = instance.score_set.count()
+        if instance.id:
+            uri = '<a href="%s">%s</a>' % (url, score)
+        else:
+            uri = score
         return mark_safe(uri)
 
     total_participants.allow_tags = True
@@ -69,9 +72,6 @@ class AggregatedScoreAdmin(admin.ModelAdmin):
     readonly_fields = ('score', )
 
 class GameSessionAdmin(admin.ModelAdmin):
-    inlines = [
-        ScoreInline,
-    ]
 
     def get_inline_instances(self, request, obj=None):
         inline_instances = []
@@ -82,7 +82,7 @@ class GameSessionAdmin(admin.ModelAdmin):
         if obj.game.game_type == obj.game.JUDGE:
             inlines.append(AggregatedScoreInline)
         else:
-            inlines.append(ScoreInline)
+            inlines.append(SingleScoreInline)
 
         if obj.game.game_type == obj.game.GUESSING:
             inlines.append(GuessInline)
@@ -105,7 +105,7 @@ class GameSessionAdmin(admin.ModelAdmin):
         obj.save()
 
     def save_formset(self, request, form, formset, change):
-        if formset.model == Score:
+        if formset.model == SingleScore:
             instances = formset.save(commit=False)
             for obj in formset.deleted_objects:
                 obj.delete()
