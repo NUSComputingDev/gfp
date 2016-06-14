@@ -68,7 +68,7 @@ class AggregatedScoreAdmin(admin.ModelAdmin):
         PartialScoreInline,
     ]
 
-    list_display = ('player_name', 'game', 'score', 'total_score')
+    list_display = ('player', 'game', 'score')
     readonly_fields = ('score', )
 
 class GameSessionAdmin(admin.ModelAdmin):

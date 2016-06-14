@@ -50,6 +50,7 @@ class GamePrize(models.Model):
 
     class Meta:
         unique_together = ("game", "rank")
+        ordering = ['rank']
 
 class Score(models.Model):
     """
@@ -75,7 +76,6 @@ class SingleScore(Score):
         super(SingleScore, self).validate_unique(*args, **kwargs)
         unique_args = {"position": self.position,
                        "game_session":self.game_session}
-        print("pk: {}".format(self.pk))
         if self.__class__.objects.filter(**unique_args).exclude(pk=self.pk).exists():
             raise ValidationError(
                         {
@@ -93,24 +93,12 @@ class AggregatedScore(Score):
     def game(self):
         return self.game_session.game
 
-    def player_name(self):
-        return self.player
-
     def average_score(self):
-        cumulative_score = self.total_score()
+        cumulative_score = self.score
         judges_count = self.partialscore_set.count()
         if judges_count == 0:
             return 0
         return cumulative_score / judges_count
-
-    def total_score(self):
-        partial_scores = self.partialscore_set.all()
-        cumulative_score = 0
-
-        for partial in partial_scores:
-            cumulative_score += partial.score * (partial.percentage / 100)
-
-        return cumulative_score
 
 # Score for an aggregated GameSession
 class PartialScore(models.Model):
