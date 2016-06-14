@@ -1,9 +1,11 @@
 from django.contrib import admin
 from django.db.models import Q, F
-from .models import Game, Score, GameSession, Guess, GamePrize, AggregatedScore, PartialScore, SingleScore
+from .models import Game, Score, GameSession, GamePrize, AggregatedScore, PartialScore, SingleScore
 from django.contrib.contenttypes.models import ContentType
 from django.core.urlresolvers import reverse
 from django.utils.safestring import mark_safe
+
+from games.models import Guess
 
 class SingleScoreInline(admin.TabularInline):
     model = SingleScore

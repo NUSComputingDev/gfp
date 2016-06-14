@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'scoreboard.apps.ScoreboardConfig',
     'players.apps.PlayersConfig',
+    'games.apps.GamesConfig'
 ]
 
 MIDDLEWARE_CLASSES = [
