@@ -1,9 +1,11 @@
+from django.core.exceptions import ValidationError
 from django.test import TestCase
 from django.contrib.auth.models import User
 
 from scoreboard import models as sb_model
 from players.models import Player
 from games import models
+
 
 class GuessModelTestCase(TestCase):
 
@@ -23,10 +25,11 @@ class GuessModelTestCase(TestCase):
         cls.player_user = User.objects.create_user('player')
         cls.gm_user = User.objects.create_user('gamemaster')
 
-    def create_game_session(self, game):
+    def create_game_session(self, game, is_active=True):
         """Creates a GameSession for testing"""
         return sb_model.GameSession.objects.create(game_master=self.gm_user,
-                                                   game=game)
+                                                   game=game,
+                                                   is_active=is_active)
 
     def test_create_guess(self):
         """
@@ -39,7 +42,7 @@ class GuessModelTestCase(TestCase):
         """
         game_session = self.create_game_session(self.guessing_game)
         guess = models.Guess.objects.create(guess=145,
-                                            game_sesion=game_session,
+                                            game_session=game_session,
                                             player=self.player)
 
         guess_db_data = models.Guess.objects.get(pk=guess.pk)
@@ -50,6 +53,25 @@ class GuessModelTestCase(TestCase):
                          "Test if Guess has a relation with GameSession")
         self.assertIsNotNone(guess_db_data.guessed_on,
                              "Test if Guess has a timestamp")
+
+    def test_create_guess_inactive_gamesession(self):
+        """
+        Test if we are prevented from creating a Guess object linked to
+        an inactive game session.
+
+        Test Coverage:
+            - Checks on GameSession validity
+            - Data store integrity when preventing addition
+        """
+        game_session = self.create_game_session(self.guessing_game, False)
+
+        guess = models.Guess.objects.create(guess=144,
+                                            game_session=game_session,
+                                            player=self.player)
+        with self.assertRaises(guess.DoesNotExist):
+            guess_db_data = models.Guess.objects.get(pk=guess.pk)
+
+        self.assertIsNone(guess.pk, "Guess save does not affect primary keys")
 
     @classmethod
     def tearDownClass(cls):

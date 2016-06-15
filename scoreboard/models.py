@@ -34,6 +34,7 @@ class GameSession(models.Model):
     game_master = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     game = models.ForeignKey('Game', on_delete=models.CASCADE)
     guess_value = models.PositiveIntegerField(default=0)
+    is_active = models.BooleanField()
     def __str__(self):
         return '%s #%d' % (self.game, self.id)
 
