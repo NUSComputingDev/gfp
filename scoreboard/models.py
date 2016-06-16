@@ -1,8 +1,10 @@
 from django.db import models
-from django.db.models import Q
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.core.exceptions import NON_FIELD_ERRORS
+
+import datetime
+
 
 class Game(models.Model):
     """
@@ -57,12 +59,12 @@ class Score(models.Model):
     """
     Base Model for Scoring
     """
-    game_session = models.ForeignKey('GameSession', on_delete=models.CASCADE)
-    player = models.ForeignKey('players.Player', on_delete=models.CASCADE)
+    game_session = models.ForeignKey('GameSession', blank=True, null=True, on_delete=models.CASCADE)
+    player = models.ForeignKey('players.Player', blank=True, null=True, on_delete=models.CASCADE)
     score = models.IntegerField(default=0)
 
     def __str__(self):
-        return "%s's score for %s" % (self.player, self.game_session.game)
+        return "%d point(s)" % (self.score)
 
 class SingleScore(Score):
     """
@@ -100,6 +102,24 @@ class AggregatedScore(Score):
         if judges_count == 0:
             return 0
         return cumulative_score / judges_count
+
+class PointCode(Score):
+    """
+    A 'scoring' system based on special predefined voucher-like codes
+    """
+    code = models.CharField(max_length=255)
+    consumed_on = models.DateField(null=True, blank=True)
+
+    def is_consumed(self):
+        return self.consumed_on is not None
+
+    def consume_code(self, player):
+        self.player = player
+        self.consumed_on = datetime.datetime.now()
+        self.save()
+
+    def __str__(self):
+        return '%s' % (self.code)
 
 # Score for an aggregated GameSession
 class PartialScore(models.Model):
