@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.db.models import Q, F
-from .models import Game, Score, GameSession, GamePrize, AggregatedScore, PartialScore, SingleScore
+from .models import Game, Score, GameSession, GamePrize, AggregatedScore, PartialScore, SingleScore, PointCode
 from django.contrib.contenttypes.models import ContentType
 from django.core.urlresolvers import reverse
 from django.utils.safestring import mark_safe
@@ -132,7 +132,11 @@ class GameAdmin(admin.ModelAdmin):
         GameSessionInline,
     ]
 
+class PointCodeAdmin(admin.ModelAdmin):
+    model = PointCode
+
 admin.site.register(Game, GameAdmin)
 admin.site.register(GameSession, GameSessionAdmin)
 admin.site.register(AggregatedScore, AggregatedScoreAdmin)
 admin.site.register(Guess, GuessAdmin)
+admin.site.register(PointCode, PointCodeAdmin)
