@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.core.exceptions import ValidationError
-from django.db.models import Q, F
+from django.db.models import Q, F, Func
 from django import forms
 from .models import Game, Score, GameSession, GamePrize, AggregatedScore, PartialScore, SingleScore
 from django.contrib.contenttypes.models import ContentType
@@ -18,8 +18,6 @@ class SingleScoreInlineFormset(forms.models.BaseInlineFormSet):
         positions_used = []
 
         for form in self.forms:
-            print('wat')
-            print(form)
             if not hasattr(form, 'cleaned_data'):
                 continue
             else:
@@ -80,11 +78,15 @@ class GuessInline(admin.TabularInline):
     field = ('player', 'guess', 'closeness', )
     readonly_fields = ('closeness', )
 
+    def get_queryset(self, request):
+        qs = super(GuessInline, self).get_queryset(request)
+        return qs.annotate(closeness=Func(F('guess') - F('game_session__guess_value'), function='ABS'))\
+                 .order_by('closeness')
+
     def closeness(self, instance):
-        if instance.id is None:
-            return '-'
-        actual_value = instance.game_session.guess_value
-        return '%d' % (abs(instance.guess - actual_value))
+        return instance.closeness
+
+    closeness.admin_order_field = 'closeness'
 
 class GuessAdmin(admin.ModelAdmin):
     model = Guess
@@ -130,7 +132,6 @@ class GameSessionAdmin(admin.ModelAdmin):
         return base_readonly
 
     def save_model(self, request, obj, form, change):
-        print('guilty')
         if not request.user.is_superuser:
             obj.game_master = request.user
         obj.save()
