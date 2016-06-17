@@ -1,8 +1,8 @@
 from django.db import models
 from django.db.models import Q
 from django.conf import settings
-from django.core.exceptions import ValidationError
-from django.core.exceptions import NON_FIELD_ERRORS
+from django.core.exceptions import MultipleObjectsReturned
+
 
 class Game(models.Model):
     """
@@ -34,6 +34,8 @@ class GameSession(models.Model):
     game_master = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     game = models.ForeignKey('Game', on_delete=models.CASCADE)
     guess_value = models.PositiveIntegerField(default=0)
+    is_active = models.BooleanField(default=True)
+
     def __str__(self):
         return '%s #%d' % (self.game, self.id)
 
@@ -58,7 +60,7 @@ class Score(models.Model):
     """
     game_session = models.ForeignKey('GameSession', on_delete=models.CASCADE)
     player = models.ForeignKey('players.Player', on_delete=models.CASCADE)
-    score = models.IntegerField(default=0)
+    score = models.IntegerField(default=0, null=True, blank=True)
 
     def __str__(self):
         return "%s's score for %s" % (self.player, self.game_session.game)
@@ -67,21 +69,26 @@ class SingleScore(Score):
     """
     Classic scoring system: you get what you are given
     """
-    position = models.IntegerField(default=0)
+    position = models.PositiveIntegerField(default=0)
 
-    def validate_unique(self, *args, **kwargs):
+    def save(self, *args, **kwargs):
         """
-        Validate that the score has a unique position for the game session
+        Checks for null-score and if there is, update it with the score from GamePrize.
+
+        :param args:
+        :param kwargs:
+        :return:
         """
-        super(SingleScore, self).validate_unique(*args, **kwargs)
-        unique_args = {"position": self.position,
-                       "game_session":self.game_session}
-        if self.__class__.objects.filter(**unique_args).exclude(pk=self.pk).exists():
-            raise ValidationError(
-                        {
-                            NON_FIELD_ERRORS: ['Position must be unique!'],
-                        }
-                    )
+        if self.score is None:
+            try:
+                prize = GamePrize.objects.get(rank=self.position, game=self.game_session.game)
+                self.score = prize.score
+            except GamePrize.DoesNotExist:
+                self.score = 0
+            except MultipleObjectsReturned:
+                self.score = 0
+
+        super(SingleScore, self).save(*args, **kwargs)
 
     class Meta:
         ordering = ['position']
