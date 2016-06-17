@@ -1,10 +1,13 @@
-from .models import Game, Score, Guess, GameSession
-from players.models import Player
-from .forms import GuessingForm
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, permission_required
 from django.http import HttpResponseForbidden
 from django.shortcuts import render, redirect, get_object_or_404
+
+from players.models import Player
+from games.models import Guess
+
+from .models import Game, Score, GameSession
+from .forms import GuessingForm
 
 # Create your views here.
 @login_required

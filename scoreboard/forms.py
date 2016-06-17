@@ -1,5 +1,6 @@
 from django.forms import ModelForm
-from .models import Score, Guess
+from .models import Score
+from games.models import Guess
 
 # Form for scoreboard
 class ScoreForm(ModelForm):

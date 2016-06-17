@@ -124,20 +124,3 @@ class PartialScore(models.Model):
         ordering = ['-percentage']
         unique_together = ("aggregated_score", "game_master")
 
-class Guess(models.Model):
-    """
-    Model to store player's guesses for guessing games
-    """
-    player = models.ForeignKey('players.Player', on_delete=models.CASCADE)
-    guess = models.PositiveIntegerField(default=0)
-    guessed_on = models.DateField(auto_now=True)
-    game_session = models.ForeignKey('GameSession',
-                                     on_delete=models.CASCADE,
-                                     limit_choices_to=Q(game__game_type=Game.GUESSING))
-
-    def __str__(self):
-        return '%s: %d' % (self.player, self.guess)
-
-    class Meta:
-        unique_together = ("game_session", "player")
-        verbose_name_plural = 'Guesses'

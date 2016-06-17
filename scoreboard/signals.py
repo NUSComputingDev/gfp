@@ -1,18 +1,29 @@
+from django.db import transaction
 from django.db.models import F, Func
 from django.db.models.signals import post_save
 from django.dispatch import receiver
-from scoreboard.models import PartialScore, GameSession, Game
+from scoreboard.models import PartialScore, GameSession, Game, SingleScore
 
 import math
 
 
 def get_sorted_guesses(instance):
     all_guesses = instance.guess_set.all()
-    correct_value = instance.game.guess_value
+    correct_value = instance.guess_value
     annotated_guesses = all_guesses.annotate(difference=Func(F('guess') - correct_value, function='ABS'))
-    sorted_guesses = annotated_guesses.order_by('guess', '-guessed_on')
+    sorted_guesses = annotated_guesses.order_by('difference', '-guessed_on')
 
     return sorted_guesses
+
+@transaction.atomic()
+def assign_scores_to_players(sorted_set):
+    for idx, guess in enumerate(sorted_set):
+        obj, created = SingleScore.objects.get_or_create(player=guess.player, game_session=guess.game_session)
+
+        obj.position = idx+1
+        obj.score = None
+
+        obj.save()
 
 @receiver(post_save, sender=GameSession, dispatch_uid="tally_guessing_scores")
 def tally_guessing_scores(sender, instance, **kwargs):
@@ -23,7 +34,7 @@ def tally_guessing_scores(sender, instance, **kwargs):
         return
 
     sorted_guesses = get_sorted_guesses(instance)
-
+    assign_scores_to_players(sorted_guesses)
 
 
 @receiver(post_save, sender=PartialScore, dispatch_uid="update_total_score")
