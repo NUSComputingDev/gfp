@@ -1,8 +1,29 @@
+from django.db.models import F, Func
 from django.db.models.signals import post_save
 from django.dispatch import receiver
-from scoreboard.models import PartialScore
+from scoreboard.models import PartialScore, GameSession, Game
 
 import math
+
+
+def get_sorted_guesses(instance):
+    all_guesses = instance.guess_set.all()
+    correct_value = instance.game.guess_value
+    annotated_guesses = all_guesses.annotate(difference=Func(F('guess') - correct_value, function='ABS'))
+    sorted_guesses = annotated_guesses.order_by('guess', '-guessed_on')
+
+    return sorted_guesses
+
+@receiver(post_save, sender=GameSession, dispatch_uid="tally_guessing_scores")
+def tally_guessing_scores(sender, instance, **kwargs):
+    """
+    Commit scores to DB for Guessing-type games.
+    """
+    if instance.is_active or instance.game.game_type != Game.GUESSING or not instance.guess_set.count():
+        return
+
+    sorted_guesses = get_sorted_guesses(instance)
+
 
 
 @receiver(post_save, sender=PartialScore, dispatch_uid="update_total_score")
