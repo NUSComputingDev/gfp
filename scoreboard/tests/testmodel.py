@@ -5,6 +5,84 @@ from scoreboard import models
 from players.models import Player
 
 
+class SingleScoreTestCase(TestCase):
+    @classmethod
+    def setUpClass(cls):
+        """Sets up the testing environment"""
+        cls.setup_users()
+        cls.player = Player.objects.create(user=cls.player_user)
+        cls.normal_game = models.Game.objects.create(name='Normal Game',
+                                                     is_active=True)
+
+    def create_test_gamesession(self, game_type=models.Game.NORMAL):
+        """
+        Creates a GameSession for tests that do not explicitly test
+        the correctness of GameSession
+        """
+        return models.GameSession.objects.create(game_master=self.gm_user,
+                                                 game=self.normal_game)
+
+    def create_test_gamemaster(self, prefix_username):
+        """
+        Creates a dummy GameMaster for testing
+        """
+        return User.objects.create_user('{}-test'.format(prefix_username))
+
+    def test_game_prize_automation(self):
+        """
+        Test if player's score is automatically retrieved from a GamePrize
+        Test Coverage:
+            - Detection of invalid score for SingleScore
+            - Retrieval of correct score based on player's position and game
+        """
+        game_session = self.create_test_gamesession()
+
+        game_prize = models.GamePrize.objects.create(game=game_session.game,
+                                                     rank=1,
+                                                     score=1000)
+
+        single_score = models.SingleScore.objects.create(player=self.player,
+                                                         game_session=game_session,
+                                                         score=None,
+                                                         position=game_prize.rank)
+
+        self.assertEqual(game_prize.score, single_score.score,
+                         "Auto popualte of score using GamePrize data")
+
+    def test_game_prize_default_value(self):
+        """
+        Tests the behaviour of non-existent GamePrize entry
+        Test Coverage:
+            - Default value for score when corresponding GamePrize cannot be found
+        """
+        game_session = self.create_test_gamesession()
+
+        single_score = models.SingleScore.objects.create(player=self.player,
+                                                         game_session=game_session,
+                                                         score=None,
+                                                         position=0)
+
+        self.assertEqual(0, single_score.score,
+                         "Auto popualte of score using GamePrize data")
+
+
+    @classmethod
+    def setup_users(cls):
+        """Creates users necessary for testing purposes"""
+        cls.player_user = User.objects.create_user('player')
+        cls.gm_user = User.objects.create_user('gamemaster')
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.teardown_users()
+        cls.player.delete()
+
+    @classmethod
+    def teardown_users(cls):
+        """Removes users created using setup_users"""
+        cls.player_user.delete()
+        cls.gm_user.delete()
+
 class PointCodeModelTestCase(TestCase):
     @classmethod
     def setUpClass(cls):

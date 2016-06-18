@@ -1,14 +1,43 @@
 from django.contrib import admin
+from django.core.exceptions import ValidationError
 from django.db.models import Q, F
+from django import forms
 from .models import Game, Score, GameSession, GamePrize, AggregatedScore, PartialScore, SingleScore, PointCode
 from django.contrib.contenttypes.models import ContentType
 from django.core.urlresolvers import reverse
 from django.utils.safestring import mark_safe
+from django.utils.translation import ugettext_lazy as _
+
+
+class SingleScoreInlineFormset(forms.models.BaseInlineFormSet):
+    def clean(self):
+        super(SingleScoreInlineFormset, self).clean()
+
+        positions_used = []
+
+        for form in self.forms:
+            print('wat')
+            print(form)
+            if not hasattr(form, 'cleaned_data'):
+                continue
+            else:
+                if form.cleaned_data.get('DELETE', True):
+                    continue
+
+                data = form.cleaned_data
+                pos = data.get('position')
+
+                if pos is not None and pos in positions_used:
+                    raise ValidationError(_('Position must be unique!'))
+
+                positions_used.append(pos)
+
 
 from games.models import Guess
 
 class SingleScoreInline(admin.TabularInline):
     model = SingleScore
+    formset = SingleScoreInlineFormset
 
     # Allow superuser to add score
     def get_readonly_fields(self, request, obj=None):
@@ -107,20 +136,17 @@ class GameSessionAdmin(admin.ModelAdmin):
         obj.save()
 
     def save_formset(self, request, form, formset, change):
-        if formset.model == SingleScore:
-            instances = formset.save(commit=False)
-            for obj in formset.deleted_objects:
-                obj.delete()
-            for instance in instances:
-                q = GamePrize.objects.filter(Q(rank=instance.position) & Q(game=instance.game_session.game))
-                if q.exists():
-                    # Prevent tampering of score for non-superusers
-                    if instance.score <= 0 or not request.user.is_superuser:
-                        instance.score = q[0].score
-                instance.save()
-            formset.save_m2m()
-        else:
-            if formset.is_valid():
+        if formset.is_valid():
+            if formset.model == SingleScore:
+                instances = formset.save(commit=False)
+                for obj in formset.deleted_objects:
+                    obj.delete()
+                for instance in instances:
+                    if not request.user.is_superuser:
+                        instance.score = None
+                    instance.save()
+                formset.save_m2m()
+            else:
                 formset.save()
 
 class GamePrizeInline(admin.TabularInline):
