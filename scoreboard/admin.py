@@ -130,15 +130,39 @@ class GameSessionAdmin(admin.ModelAdmin):
 
         return inline_instances
 
+    def get_queryset(self, request):
+        qs = super(GameSessionAdmin, self).get_queryset(request)
+        if request.user.is_superuser:
+            return qs
+        else:
+            return qs.filter(game_master=request.user, is_active=True)
+
     def get_readonly_fields(self, request, obj=None):
         base_readonly = super(GameSessionAdmin, self).get_readonly_fields(request, obj)
         if not request.user.is_superuser:
             base_readonly = base_readonly + ('game_master', )
         return base_readonly
 
+    def has_change_permission(self, request, obj=None):
+        """
+        Checks if staff has permission to modify a GameSession
+        Behaviour:
+            - Game masters can only edit active GameSessions that are run by them
+            - Administrators can edit any GameSession, without any restrictions
+        """
+        if not obj or request.user.is_superuser:
+            return True
+
+        if obj.game_master == request.user and obj.is_active:
+            return True
+        else:
+            return False
+
     def save_model(self, request, obj, form, change):
         if not request.user.is_superuser:
             obj.game_master = request.user
+            if obj.is_active:
+                GameSession.objects.filter(game_master=request.user, is_active=True).update(is_active=False)
         obj.save()
 
     def save_formset(self, request, form, formset, change):
