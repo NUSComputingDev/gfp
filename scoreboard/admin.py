@@ -162,6 +162,14 @@ class GameAdmin(admin.ModelAdmin):
 class PointCodeAdmin(admin.ModelAdmin):
     model = PointCode
 
+    list_display = ('__str__', 'player', 'consumed_on')
+
+    def get_readonly_fields(self, request, obj=None):
+        base_readonly = super(PointCodeAdmin, self).get_readonly_fields(request, obj)
+        if not request.user.is_superuser:
+            base_readonly = base_readonly + ('consumed_on', )
+        return base_readonly
+
 admin.site.register(Game, GameAdmin)
 admin.site.register(GameSession, GameSessionAdmin)
 admin.site.register(AggregatedScore, AggregatedScoreAdmin)
