@@ -3,7 +3,6 @@ from django.db.models import Q
 from django.conf import settings
 from django.core.exceptions import MultipleObjectsReturned
 
-
 import datetime
 
 
@@ -27,8 +26,10 @@ class Game(models.Model):
     name = models.CharField(max_length=255)
     is_active = models.BooleanField()
     display_leaderboard = models.BooleanField(default=True)
+
     def __str__(self):
         return '%s' % (self.name)
+
 
 class GameSession(models.Model):
     """
@@ -41,6 +42,7 @@ class GameSession(models.Model):
 
     def __str__(self):
         return '%s #%d' % (self.game, self.id)
+
 
 class GamePrize(models.Model):
     """
@@ -57,6 +59,7 @@ class GamePrize(models.Model):
         unique_together = ("game", "rank")
         ordering = ['rank']
 
+
 class Score(models.Model):
     """
     Base Model for Scoring
@@ -67,6 +70,7 @@ class Score(models.Model):
 
     def __str__(self):
         return "%d point(s)" % (self.score)
+
 
 class SingleScore(Score):
     """
@@ -96,10 +100,12 @@ class SingleScore(Score):
     class Meta:
         ordering = ['position']
 
+
 class AggregatedScore(Score):
     """
     Scoring system that is percentage based
     """
+
     def game(self):
         return self.game_session.game
 
@@ -109,6 +115,7 @@ class AggregatedScore(Score):
         if judges_count == 0:
             return 0
         return cumulative_score / judges_count
+
 
 class PointCode(Score):
     """
@@ -128,6 +135,7 @@ class PointCode(Score):
     def __str__(self):
         return '%s' % (self.code)
 
+
 # Score for an aggregated GameSession
 class PartialScore(models.Model):
     """
@@ -144,4 +152,3 @@ class PartialScore(models.Model):
     class Meta:
         ordering = ['-percentage']
         unique_together = ("aggregated_score", "game_master")
-
