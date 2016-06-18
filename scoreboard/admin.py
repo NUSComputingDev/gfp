@@ -1,12 +1,14 @@
 from django.contrib import admin
 from django.core.exceptions import ValidationError
-from django.db.models import Q, F
+from django.db.models import Q, F, Func
 from django import forms
 from .models import Game, Score, GameSession, GamePrize, AggregatedScore, PartialScore, SingleScore, PointCode
 from django.contrib.contenttypes.models import ContentType
 from django.core.urlresolvers import reverse
 from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
+
+from games.models import Guess
 
 
 class SingleScoreInlineFormset(forms.models.BaseInlineFormSet):
@@ -16,8 +18,6 @@ class SingleScoreInlineFormset(forms.models.BaseInlineFormSet):
         positions_used = []
 
         for form in self.forms:
-            print('wat')
-            print(form)
             if not hasattr(form, 'cleaned_data'):
                 continue
             else:
@@ -31,9 +31,6 @@ class SingleScoreInlineFormset(forms.models.BaseInlineFormSet):
                     raise ValidationError(_('Position must be unique!'))
 
                 positions_used.append(pos)
-
-
-from games.models import Guess
 
 class SingleScoreInline(admin.TabularInline):
     model = SingleScore
@@ -81,11 +78,15 @@ class GuessInline(admin.TabularInline):
     field = ('player', 'guess', 'closeness', )
     readonly_fields = ('closeness', )
 
+    def get_queryset(self, request):
+        qs = super(GuessInline, self).get_queryset(request)
+        return qs.annotate(closeness=Func(F('guess') - F('game_session__guess_value'), function='ABS'))\
+                 .order_by('closeness')
+
     def closeness(self, instance):
-        if instance.id is None:
-            return '-'
-        actual_value = instance.game_session.guess_value
-        return '%d' % (abs(instance.guess - actual_value))
+        return instance.closeness
+
+    closeness.admin_order_field = 'closeness'
 
 class GuessAdmin(admin.ModelAdmin):
     model = Guess
