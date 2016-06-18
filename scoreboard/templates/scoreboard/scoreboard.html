@@ -3,24 +3,22 @@
 {% block body %}
 <ul class="nav nav-tabs" role="tablist">
 {% for value in games %}
-	<li role="presentation"><a href="#tab-{{ value.id }}" aria-controls="tab-{{ value.id }}" role="tab" data-toggle="tab">{{ value.name }}</a></li>
+	<li role="presentation"><a href="#tab-{{ value.pk }}" aria-controls="tab-{{ value.pk }}" role="tab" data-toggle="tab">{{ value.name }}</a></li>
 {% endfor %}
 </ul>
 <div class="tab-content">
-	{% for value in games %}
-	<div role="tabpanel" class="tab-pane" id="tab-{{ value.id }}">
+	{% for game in games %}
+	<div role="tabpanel" class="tab-pane" id="tab-{{ game.pk }}">
 	<table class="table table-bordered">
-		{% for gamesession in value.gamesession_set.all %}
-		{% for score in gamesession.score_set.all %}
 		<thead>
 			<td>NAME</td>
 			<td>SCORE</td>
 		</thead>
+		{% for score in game.score_list %}
 		<tr>
-	    <td>{{ score.player.user.username }}</td>
+	    <td>{{ score.first_name }} {{ score.last_name }}</td>
 			<td>{{ score.score }} </td>
 		</tr>
-		{% endfor %}
 		{% endfor %}
 	</table>
 	</div>

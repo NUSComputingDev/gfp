@@ -1,5 +1,7 @@
 from django.contrib import messages
+from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth.decorators import login_required, permission_required
+from django.db.models import F, Sum
 from django.http import HttpResponseForbidden
 from django.shortcuts import render, redirect, get_object_or_404
 
@@ -10,10 +12,22 @@ from .models import Game, Score, GameSession, PointCode
 from .forms import GuessingForm, PointCodeForm
 
 
-@login_required
+@staff_member_required
 def scoreboard_view(request):
     games = Game.objects.all()
-    return render(request, 'scoreboard/scoreboard.html', {'games': games})
+
+    games_list = games.values('pk', 'name')
+
+    for game in games_list:
+        score_list = Game.objects.filter(pk=game['pk']) \
+                         .annotate(player_id=F('gamesession__score__player'),
+                                   first_name=F('gamesession__score__player__user__first_name'),
+                                   last_name=F('gamesession__score__player__user__last_name'))\
+                         .values('player_id', 'first_name', 'last_name') \
+                         .annotate(score=Sum('gamesession__score__score')).order_by('-score')
+        game['score_list'] = score_list
+
+    return render(request, 'scoreboard/scoreboard.html', {'games': games_list})
 
 
 @login_required
