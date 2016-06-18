@@ -1,5 +1,5 @@
 from django.forms import ModelForm
-from .models import Score
+from .models import Score, PointCode
 from games.models import Guess
 
 # Form for scoreboard
@@ -13,3 +13,9 @@ class GuessingForm(ModelForm):
     class Meta:
         model = Guess
         fields = ['guess']
+
+# Form for redeeming PointCode
+class PointCodeForm(ModelForm):
+    class Meta:
+        model = PointCode
+        fields = ['code']

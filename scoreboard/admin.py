@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.core.exceptions import ValidationError
 from django.db.models import Q, F, Func
 from django import forms
-from .models import Game, Score, GameSession, GamePrize, AggregatedScore, PartialScore, SingleScore
+from .models import Game, Score, GameSession, GamePrize, AggregatedScore, PartialScore, SingleScore, PointCode
 from django.contrib.contenttypes.models import ContentType
 from django.core.urlresolvers import reverse
 from django.utils.safestring import mark_safe
@@ -159,6 +159,19 @@ class GameAdmin(admin.ModelAdmin):
         GameSessionInline,
     ]
 
+class PointCodeAdmin(admin.ModelAdmin):
+    model = PointCode
+
+    list_display = ('__str__', 'player', 'consumed_on')
+
+    def get_readonly_fields(self, request, obj=None):
+        base_readonly = super(PointCodeAdmin, self).get_readonly_fields(request, obj)
+        if not request.user.is_superuser:
+            base_readonly = base_readonly + ('consumed_on', )
+        return base_readonly
+
 admin.site.register(Game, GameAdmin)
 admin.site.register(GameSession, GameSessionAdmin)
 admin.site.register(AggregatedScore, AggregatedScoreAdmin)
+admin.site.register(Guess, GuessAdmin)
+admin.site.register(PointCode, PointCodeAdmin)

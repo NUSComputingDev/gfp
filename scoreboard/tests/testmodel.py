@@ -83,6 +83,68 @@ class SingleScoreTestCase(TestCase):
         cls.player_user.delete()
         cls.gm_user.delete()
 
+class PointCodeModelTestCase(TestCase):
+    @classmethod
+    def setUpClass(cls):
+        """Sets up the testing environment"""
+        cls.setUpUsers()
+        cls.player = Player.objects.create(user=cls.player_user)
+
+    @classmethod
+    def setUpUsers(cls):
+        """Creates users necessary for testing purposes"""
+        cls.player_user = User.objects.create_user('player')
+        cls.gm_user = User.objects.create_user('gamemaster')
+
+    def test_create_point_code(self):
+        """
+        Tests the creation logic for PointCode model
+        Test Coverage:
+            - Creation of PointCode instance
+        """
+        point_code = models.PointCode.objects.create(code='ABCD1234',
+                                                     score=1000)
+
+        self.assertIsNotNone(point_code.pk,
+                             "Assert that the PointCode was written to DB")
+
+        point_code_db_obj = models.PointCode.objects.get(pk=point_code.pk)
+
+        self.assertEqual(point_code, point_code_db_obj,
+                         "Assert PointCode data integrity was upheld")
+
+    def test_consume_point_code(self):
+        """
+        Tests if we can consume a PointCode
+        Test Coverage:
+            - Consumption of PointCode by Player
+            - Relation between PointCode and the Player that was awarded the point
+            - Accounting of the time the PointCode was consumed
+        """
+        point_code = models.PointCode.objects.create(code='ABCD1234',
+                                                     score=1000)
+
+        point_code.consume_code(self.player)
+
+        self.assertTrue(point_code.is_consumed(), "Assert that the PointCode has been consumed")
+        self.assertIsNotNone(point_code.consumed_on, "Assert that time of consumption was recorded")
+
+        player_scores = self.player.score_set.all()
+
+        self.assertIn(point_code.score_ptr, player_scores,
+                      "Assert that the relation between Player and PointScore was established")
+
+    @classmethod
+    def tearDownClass(cls):
+        """Destroys the testing environment"""
+        cls.tearDownUsers()
+        cls.player.delete()
+
+    @classmethod
+    def tearDownUsers(cls):
+        """Removes users created using setup_users"""
+        cls.player_user.delete()
+        cls.gm_user.delete()
 
 class ScoreboardTestCase(TestCase):
     @classmethod
