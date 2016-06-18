@@ -36,6 +36,11 @@ class SingleScoreInline(admin.TabularInline):
     model = SingleScore
     formset = SingleScoreInlineFormset
 
+    raw_id_fields = ('player', )
+    autocomplete_lookup_fields = {
+        'fk': ['player'],
+    }
+
     # Allow superuser to add score
     def get_readonly_fields(self, request, obj=None):
         if request.user.is_superuser:
