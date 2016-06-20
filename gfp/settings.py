@@ -33,6 +33,7 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    'grappelli',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -41,6 +42,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'scoreboard.apps.ScoreboardConfig',
     'players.apps.PlayersConfig',
+    'games.apps.GamesConfig'
 ]
 
 MIDDLEWARE_CLASSES = [
@@ -130,4 +132,12 @@ STATIC_URL = '/static/'
 
 MESSAGE_TAGS = {
     messages.ERROR: 'danger'
+}
+
+# django-grappelli settings
+GRAPPELLI_ADMIN_TITLE = 'GFP Administration'
+GRAPPELLI_AUTOCOMPLETE_SEARCH_FIELDS = {
+    "players": {
+        "player": ("user__username__icontains", "user__first_name__icontains", "user__last_name__icontains")
+    }
 }
