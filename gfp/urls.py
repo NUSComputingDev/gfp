@@ -17,7 +17,9 @@ from django.conf.urls import url, include
 from django.contrib import admin
 
 urlpatterns = [
-    url(r'^gfp-system/', include('scoreboard.urls')),
+    url(r'^$', 'players.views.index', name='players-index'),
+    url(r'^gfp-system/', include('scoreboard.urls', namespace='scoreboard')),
+    url(r'^player/', include('players.urls')),
     url(r'^grappelli/', include('grappelli.urls')),
     url(r'^admin/', admin.site.urls)
 ]

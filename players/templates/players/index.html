@@ -1,0 +1,56 @@
+{% extends "index.html" %}
+{% load addcss %}
+
+{% block body %}
+<div class="well">
+  <div>
+
+  <!-- Nav tabs -->
+  <ul class="nav nav-tabs" role="tablist">
+    <li role="presentation" class="active"><a href="#home" aria-controls="home" role="tab" data-toggle="tab">Home</a></li>
+    <li role="presentation"><a href="#scores" aria-controls="scores" role="tab" data-toggle="tab">Game Scores</a></li>
+    <li role="presentation"><a href="#guess" aria-controls="guess" role="tab" data-toggle="tab">Guessing Games</a></li>
+  </ul>
+
+  <!-- Tab panes -->
+  <div class="tab-content">
+    <div role="tabpanel" class="tab-pane fade in active" style="text-align: center" id="home">
+        <h2>Welcome, {{ player }}</h2>
+        <hr/>
+        <h3>Your Overall Score</h3>
+        <h3>{{ total }}</h3>
+        <hr/>
+        <h3>Enter VIP Code</h3>
+        <form method="POST" action="{%url 'scoreboard:redemption' %}">
+            <div class="form-group">
+                {{ pointcode_form.code | addcss:"form-control input-lg"}}
+            </div>
+            <button type="submit" class="btn btn-default">Submit</button>
+        </form>
+    </div>
+    <div role="tabpanel" class="tab-pane fade" id="scores">
+        <table class="table table-bordered">
+            <thead>
+                <td>GAME</td>
+                <td>SCORE</td>
+            </thead>
+            {% for score in scores %}
+            <tr>
+            <td>{{ score.name }}</td>
+                <td>{{ score.total_score }} </td>
+            </tr>
+            {% endfor %}
+	    </table>
+    </div>
+    <div role="tabpanel" class="tab-pane fade" id="guess">
+        <ul>
+            {% for game in guessing_games %}
+            <li><a href="{% url 'scoreboard:guessing-form' id=game.id %}">{{ game.name }}</a></li>
+            {% endfor %}
+        </ul>
+    </div>
+  </div>
+
+</div>
+</div>
+{% endblock %}
