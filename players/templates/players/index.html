@@ -22,6 +22,7 @@
         <hr/>
         <h3>Enter VIP Code</h3>
         <form method="POST" action="{%url 'scoreboard:redemption' %}">
+            {% csrf_token %}
             <div class="form-group">
                 {{ pointcode_form.code | addcss:"form-control input-lg"}}
             </div>
