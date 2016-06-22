@@ -11,7 +11,7 @@ from scoreboard.models import Game
 
 def index(request):
     if not request.user.is_authenticated():
-        return redirect('players-login')
+        return redirect('players:players-login')
     else:
         player = Player.objects.get(user=request.user)
         scores = player.score_set.all().filter(game_session__game__display_leaderboard=True)\
