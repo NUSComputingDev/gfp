@@ -19,12 +19,13 @@ def scoreboard_view(request):
     games_list = games.values('pk', 'name')
 
     for game in games_list:
-        score_list = Game.objects.filter(pk=game['pk']) \
-                         .annotate(player_id=F('gamesession__score__player'),
-                                   first_name=F('gamesession__score__player__user__first_name'),
-                                   last_name=F('gamesession__score__player__user__last_name'))\
-                         .values('player_id', 'first_name', 'last_name') \
-                         .annotate(score=Sum('gamesession__score__score')).order_by('-score')
+        filtered_game_sessions = GameSession.objects.all().filter(game__pk=2,is_active=False)
+        score_list = filtered_game_sessions.annotate(player_id=F('score__player'),
+                                                     first_name=F('score__player__user__first_name'),
+                                                     last_name=F('score__player__user__last_name'))\
+                                           .values('player_id', 'first_name', 'last_name')\
+                                           .annotate(score=Sum('score__score'))\
+                                           .order_by('-score')
         game['score_list'] = score_list
 
     return render(request, 'scoreboard/scoreboard.html', {'games': games_list})

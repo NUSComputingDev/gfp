@@ -12,7 +12,7 @@ class Guess(models.Model):
     """
     player = models.ForeignKey(Player)
     game_session = models.ForeignKey(GameSession)
-    guess = models.PositiveIntegerField()
+    guess = models.PositiveIntegerField(default=0)
     guessed_on = models.DateField(auto_now=True)
 
     def save(self, **kwargs):
