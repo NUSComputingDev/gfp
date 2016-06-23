@@ -2,6 +2,8 @@ from django.contrib import admin
 from django.core.exceptions import ValidationError
 from django.db.models import Q, F, Func
 from django import forms
+
+from games.admin import DrawInlineAdmin
 from .models import Game, Score, GameSession, GamePrize, AggregatedScore, PartialScore, SingleScore, PointCode
 from django.contrib.contenttypes.models import ContentType
 from django.core.urlresolvers import reverse
@@ -187,6 +189,24 @@ class GameAdmin(admin.ModelAdmin):
         GamePrizeInline,
         GameSessionInline,
     ]
+
+    def get_inline_instances(self, request, obj=None):
+        inline_instances = []
+        inlines = []
+        if obj is None:
+            return []
+
+        if obj.game_type == obj.LUCKY_DRAW:
+            inlines.append(DrawInlineAdmin)
+        else:
+            inlines.append(GamePrizeInline)
+            inlines.append(GameSessionInline)
+
+        for inline_class in inlines:
+            inline = inline_class(self.model, self.admin_site)
+            inline_instances.append(inline)
+
+        return inline_instances
 
 class PointCodeAdmin(admin.ModelAdmin):
     model = PointCode
