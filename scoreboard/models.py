@@ -13,10 +13,12 @@ class Game(models.Model):
     NORMAL = 'NM'
     GUESSING = 'GS'
     JUDGE = 'JD'
+    LUCKY_DRAW = 'LD'
     GAME_TYPE_CHOICES = (
         (NORMAL, 'Normal'),
         (GUESSING, 'Guessing'),
-        (JUDGE, 'Judge')
+        (JUDGE, 'Judge'),
+        (LUCKY_DRAW, 'Lucky Draw')
     )
     game_type = models.CharField(
         max_length=2,
