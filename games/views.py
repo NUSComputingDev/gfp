@@ -12,7 +12,7 @@ def draw_view(request, game_id):
     game = Game.objects.get(id=game_id)
     if game.game_type != Game.LUCKY_DRAW:
         return redirect('players:players-login')
-    print(request.POST)
+
     if request.POST and request.POST.get('start_draw'):
         entries = RaffleTicket.objects.filter(game_id=game_id)
         entry_count = entries.count()
@@ -24,5 +24,5 @@ def draw_view(request, game_id):
 
         return render(request, 'games/draw_result.html', {'draw': draw})
 
-    return render(request, 'games/draw_button.html')
+    return render(request, 'games/draw_button.html', {'game': game})
 

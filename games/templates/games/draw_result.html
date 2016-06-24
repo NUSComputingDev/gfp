@@ -1,5 +1,10 @@
-{% if draw %}
-    {{ draw.winning_ticket.player }}<br/>
-    {{ draw.winning_ticket.id }}<br/>
-    {{ draw.draw_on }}
-{% endif %}
+{% extends "index.html" %}
+
+{% block body %}
+<div class="jumbotron" style="text-align: center">
+  <h2 style="text-align: center">{{ game }}</h2>
+  {% if draw %}
+    <h2>Congratulations,</h2><h1>{{ draw.winner }}!</h1>
+  {% endif %}
+</div>
+{% endblock %}
