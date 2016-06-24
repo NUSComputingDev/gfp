@@ -24,6 +24,9 @@ class Game(models.Model):
         default=NORMAL
     )
     name = models.CharField(max_length=255)
+
+    base_score = models.IntegerField(default=0)
+
     is_active = models.BooleanField()
     display_leaderboard = models.BooleanField(default=True)
 
@@ -91,7 +94,7 @@ class SingleScore(Score):
                 prize = GamePrize.objects.get(rank=self.position, game=self.game_session.game)
                 self.score = prize.score
             except GamePrize.DoesNotExist:
-                self.score = 0
+                self.score = self.game_session.game.base_score
             except MultipleObjectsReturned:
                 self.score = 0
 
