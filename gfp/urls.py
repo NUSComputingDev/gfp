@@ -20,6 +20,7 @@ urlpatterns = [
     url(r'^$', 'players.views.index', name='players-index'),
     url(r'^gfp-system/', include('scoreboard.urls', namespace='scoreboard')),
     url(r'^player/', include('players.urls', namespace='players')),
+    url(r'^games/', include('games.urls', namespace='games')),
     url(r'^grappelli/', include('grappelli.urls')),
     url(r'^admin/', admin.site.urls)
 ]
