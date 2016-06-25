@@ -190,6 +190,16 @@ class GameAdmin(admin.ModelAdmin):
         GameSessionInline,
     ]
 
+    list_display = ('name', 'game_type', 'is_active', 'display_leaderboard', 'game_link')
+
+    def game_link(self, instance):
+        if instance.game_type == instance.LUCKY_DRAW:
+            url = reverse('games:draw', kwargs={'game_id': instance.id})
+            link = mark_safe('<a href="%s">%s</a>' % (url, 'Link'))
+        else:
+            link = 'N/A'
+        return link
+
     def get_inline_instances(self, request, obj=None):
         inline_instances = []
         inlines = []
