@@ -16,7 +16,7 @@
 		</thead>
 		{% for score in overall %}
 		<tr>
-	    <td>{{ score.first_name }} {{ score.last_name }}</td>
+	        <td>{{ score.first_name }} {{ score.last_name }}</td>
 			<td>{{ score.score }}</td>
 		</tr>
 		{% endfor %}
@@ -30,10 +30,12 @@
 			<td>SCORE</td>
 		</thead>
 		{% for score in game.score_list %}
-		<tr>
-	    <td>{{ score.first_name }} {{ score.last_name }}</td>
-			<td>{{ score.score }}</td>
-		</tr>
+            {% if score.score %}
+                <tr>
+                    <td>{{ score.first_name }} {{ score.last_name }}</td>
+                    <td>{{ score.score }}</td>
+                </tr>
+            {% endif %}
 		{% endfor %}
 	</table>
 	</div>
