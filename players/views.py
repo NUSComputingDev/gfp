@@ -7,7 +7,7 @@ from django.contrib.auth.forms import AuthenticationForm
 
 from players.models import Player
 from scoreboard.forms import PointCodeForm
-from scoreboard.models import Game
+from scoreboard.models import Game, GameSession
 
 
 def index(request):
@@ -29,7 +29,7 @@ def index(request):
 
         total_score = sum(score['total_score'] for score in scores)
 
-        active_guessing_games = Game.objects.filter(game_type=Game.GUESSING, is_active=True)
+        active_guessing_games = GameSession.objects.filter(game__game_type=Game.GUESSING, is_active=True)
 
         pointcode_form = PointCodeForm()
 

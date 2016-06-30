@@ -47,8 +47,8 @@
     </div>
     <div role="tabpanel" class="tab-pane fade" id="guess">
         <ul>
-            {% for game in guessing_games %}
-            <li><a href="{% url 'scoreboard:guessing-form' id=game.id %}">{{ game.name }}</a></li>
+            {% for gamesession in guessing_games %}
+                <li><a href="{% url 'scoreboard:guessing-form' id=gamesession.id %}">{{ gamesession.game.name }}</a></li>
             {% endfor %}
         </ul>
     </div>
