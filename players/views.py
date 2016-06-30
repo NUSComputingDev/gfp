@@ -1,5 +1,5 @@
 from django.contrib.auth import login
-from django.db.models import F, Sum
+from django.db.models import Q, F, Sum
 from django.shortcuts import render, redirect
 from django.shortcuts import HttpResponseRedirect
 from django.contrib.auth.forms import AuthenticationForm
@@ -14,7 +14,8 @@ def index(request):
         return redirect('players:players-login')
     else:
         player = Player.objects.get(user=request.user)
-        scores = player.score_set.all().filter(game_session__game__display_leaderboard=True)\
+        scores = player.score_set.all().filter(Q(game_session__game__display_leaderboard=True) |
+                                               Q(game_session__isnull=True))\
                                        .values('game_session__game')\
                                        .annotate(total_score=Sum(F('score')), name=F('game_session__game__name'))
 

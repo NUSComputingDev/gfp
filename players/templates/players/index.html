@@ -36,10 +36,12 @@
                 <td>SCORE</td>
             </thead>
             {% for score in scores %}
-            <tr>
-            <td>{{ score.name }}</td>
-                <td>{{ score.total_score }} </td>
-            </tr>
+                {% if score.name %}
+                    <tr>
+                        <td>{{ score.name }}</td>
+                        <td>{{ score.total_score }} </td>
+                    </tr>
+                {% endif %}
             {% endfor %}
 	    </table>
     </div>
