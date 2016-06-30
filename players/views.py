@@ -1,4 +1,5 @@
-from django.contrib.auth import login
+from django.contrib import messages
+from django.contrib.auth import login, logout
 from django.db.models import Q, F, Sum
 from django.shortcuts import render, redirect
 from django.shortcuts import HttpResponseRedirect
@@ -12,6 +13,13 @@ from scoreboard.models import Game
 def index(request):
     if not request.user.is_authenticated():
         return redirect('players:players-login')
+    elif not hasattr(request.user, 'player'):
+        if request.user.is_staff:
+            return redirect('admin:index')
+        else:
+            logout(request)
+            messages.error(request, 'You are not a participant for this year\'s party.')
+            return redirect('players:players-login')
     else:
         player = Player.objects.get(user=request.user)
         scores = player.score_set.all().filter(Q(game_session__game__display_leaderboard=True) |
