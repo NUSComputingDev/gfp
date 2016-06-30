@@ -2,11 +2,26 @@
 
 {% block body %}
 <ul class="nav nav-tabs" role="tablist">
+    <li role="presentation"><a href="#tab-overall" aria-controls="tab-overall" role="tab" data-toggle="tab">Overall</a></li>
 {% for value in games %}
 	<li role="presentation"><a href="#tab-{{ value.pk }}" aria-controls="tab-{{ value.pk }}" role="tab" data-toggle="tab">{{ value.name }}</a></li>
 {% endfor %}
 </ul>
 <div class="tab-content">
+	<div role="tabpanel" class="tab-pane" id="tab-overall">
+	<table class="table table-bordered">
+		<thead>
+			<td>NAME</td>
+			<td>SCORE</td>
+		</thead>
+		{% for score in overall %}
+		<tr>
+	    <td>{{ score.first_name }} {{ score.last_name }}</td>
+			<td>{{ score.score }}</td>
+		</tr>
+		{% endfor %}
+	</table>
+	</div>
 	{% for game in games %}
 	<div role="tabpanel" class="tab-pane" id="tab-{{ game.pk }}">
 	<table class="table table-bordered">
@@ -17,7 +32,7 @@
 		{% for score in game.score_list %}
 		<tr>
 	    <td>{{ score.first_name }} {{ score.last_name }}</td>
-			<td>{{ score.score }} </td>
+			<td>{{ score.score }}</td>
 		</tr>
 		{% endfor %}
 	</table>
