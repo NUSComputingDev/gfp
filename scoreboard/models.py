@@ -28,6 +28,7 @@ class Game(models.Model):
     name = models.CharField(max_length=255)
 
     base_score = models.IntegerField(default=0)
+    changeable_score = models.BooleanField()
 
     is_active = models.BooleanField()
     display_leaderboard = models.BooleanField(default=True)
