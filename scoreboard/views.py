@@ -4,6 +4,7 @@ from django.contrib.auth.decorators import login_required, permission_required
 from django.db.models import F, Sum
 from django.http import HttpResponseForbidden
 from django.shortcuts import render, redirect, get_object_or_404
+from django.utils.http import is_safe_url
 
 from players.models import Player
 from games.models import Guess
@@ -61,6 +62,10 @@ def redemption_view(request):
                 messages.error(request, 'Invalid code provided!')
         else:
             messages.error(request, 'Invalid code provided!')
+
+        redirect_url = request.POST.get('next', None)
+        if redirect_url and is_safe_url(redirect_url):
+            return redirect(redirect_url)
     else:
         form = PointCodeForm()
 
