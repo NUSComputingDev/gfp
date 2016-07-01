@@ -1,7 +1,12 @@
 language: python
 python:
-  - "3.5"
-# command to install dependencies
-install: "pip install -r requirements.txt"
-# command to run tests
+- '3.5'
+install: pip install -r requirements.txt
 script: python manage.py test
+deploy:
+  provider: heroku
+  api_key:
+    secure: EruownASNxuPJjN7AUDJ+v7lp/LcKMXu3WG5ZWXSBzXgXyX3ibzertJ4aY+p0OVolZeWcps8gzPEwsBdzSd3b+BKAOE85fDWuetdT+tbqb5Tu0tapcG+J0Wb14rMUG0Bvmvc4iv/gtYUROjFTTID9y3wakTkMDlnBVeYt3NMtfJqNei/+kQIbRznvsBWeXV5N5cNGoz0wJczVVqd5JN1Qtid2XkMBJuaeP5TZxlt4OHD3jjr/z8hwHEapnl43K/qu9KhnlFipsbvFIQb/fj9+7fO9fTcR3GMYahQGtGjHs8iSm2Ji7I9V/+TBHptD6mbEkPgKIhZWQ8gWSMOjRmvMAjBHLZHLR1L+mnQDs12o9LqQXh8e25KRiWG8ttwUZcC3VZPobm9goXejaaa5lZArU3nHAuKLMeVVeCv4f7QgxARt1+7Q4V7cFa1sX7q3Ge9IJUTeyToZelTzqZ3FPvolt+lkFUbm7VvvPPkNxOYRC6ALVCx6vVTlfckL9T/VcNAz/CHT/9LXHPImiwqFeH+0J1QR5Q61+/epRtid3drP3B677wHtVDA0ybjCOAm0CQ00lGpV6xLUGp9iHp4DZeZtARJgK1v1sGt+SwtEAshbvGQepS/lPegw2CzRJ5cgM5Gc0ppoyMNzoxVfS3dah1OHfOJeG7ZGBzlbmOZWPWhNpw=
+  app: gfp2016
+  run:
+    - "python manage.py migrate"
