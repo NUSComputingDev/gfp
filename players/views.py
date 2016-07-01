@@ -1,26 +1,48 @@
-from django.contrib.auth import login
-from django.db.models import F, Sum
+from django.contrib import messages
+from django.contrib.auth import login, logout
+from django.db.models import Q, F, Sum
 from django.shortcuts import render, redirect
 from django.shortcuts import HttpResponseRedirect
 from django.contrib.auth.forms import AuthenticationForm
 
+from games.models import Guess
 from players.models import Player
-from scoreboard.forms import PointCodeForm
-from scoreboard.models import Game
+from scoreboard.forms import PointCodeForm, GuessingForm
+from scoreboard.models import Game, GameSession
 
 
 def index(request):
     if not request.user.is_authenticated():
         return redirect('players:players-login')
+    elif not hasattr(request.user, 'player'):
+        if request.user.is_staff:
+            return redirect('admin:index')
+        else:
+            logout(request)
+            messages.error(request, 'You are not a participant for this year\'s party.')
+            return redirect('players:players-login')
     else:
         player = Player.objects.get(user=request.user)
-        scores = player.score_set.all().filter(game_session__game__display_leaderboard=True)\
+        scores = player.score_set.all().filter(Q(game_session__game__display_leaderboard=True) |
+                                               Q(game_session__isnull=True))\
                                        .values('game_session__game')\
                                        .annotate(total_score=Sum(F('score')), name=F('game_session__game__name'))
 
         total_score = sum(score['total_score'] for score in scores)
 
-        active_guessing_games = Game.objects.filter(game_type=Game.GUESSING, is_active=True)
+        active_guessing_games = GameSession.objects.filter(game__game_type=Game.GUESSING, is_active=True)\
+                                                   .values('id', 'game__name')
+
+        def get_forms(guess_game):
+            try:
+                guess_object = Guess.objects.get(player=request.user.player, game_session__id=guess_game['id'])
+                guess_game['form'] = GuessingForm(instance=guess_object)
+            except Guess.DoesNotExist:
+                guess_game['form'] = GuessingForm()
+
+            return guess_game
+
+        active_guessing_games = map(get_forms, active_guessing_games)
 
         pointcode_form = PointCodeForm()
 

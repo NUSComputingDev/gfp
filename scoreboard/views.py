@@ -4,6 +4,7 @@ from django.contrib.auth.decorators import login_required, permission_required
 from django.db.models import F, Sum
 from django.http import HttpResponseForbidden
 from django.shortcuts import render, redirect, get_object_or_404
+from django.utils.http import is_safe_url
 
 from players.models import Player
 from games.models import Guess
@@ -18,8 +19,15 @@ def scoreboard_view(request):
 
     games_list = games.values('pk', 'name')
 
+    overall_scores = Score.objects.all().annotate(player_id=F('player'),
+                                                  first_name=F('player__user__first_name'),
+                                                  last_name=F('player__user__last_name'))\
+                                        .values('player_id', 'first_name', 'last_name')\
+                                        .annotate(score=Sum('score'))\
+                                        .order_by('-score')
+
     for game in games_list:
-        filtered_game_sessions = GameSession.objects.all().filter(game__pk=2,is_active=False)
+        filtered_game_sessions = GameSession.objects.all().filter(game__pk=game['pk'])
         score_list = filtered_game_sessions.annotate(player_id=F('score__player'),
                                                      first_name=F('score__player__user__first_name'),
                                                      last_name=F('score__player__user__last_name'))\
@@ -28,7 +36,7 @@ def scoreboard_view(request):
                                            .order_by('-score')
         game['score_list'] = score_list
 
-    return render(request, 'scoreboard/scoreboard.html', {'games': games_list})
+    return render(request, 'scoreboard/scoreboard.html', {'games': games_list, 'overall': overall_scores})
 
 
 @login_required
@@ -54,6 +62,10 @@ def redemption_view(request):
                 messages.error(request, 'Invalid code provided!')
         else:
             messages.error(request, 'Invalid code provided!')
+
+        redirect_url = request.POST.get('next', None)
+        if redirect_url and is_safe_url(redirect_url):
+            return redirect(redirect_url)
     else:
         form = PointCodeForm()
 
@@ -82,6 +94,10 @@ def guess_view(request, id):
                 messages.info(request, 'Your guess has been successfully recorded!')
             else:
                 messages.error(request, 'Something went wrong!')
+
+            redirect_url = request.POST.get('next', None)
+            if redirect_url and is_safe_url(redirect_url):
+                return redirect(redirect_url)
         else:
             messages.warning(request, 'You are most likely a cheeky admin!')
     return render(request, 'scoreboard/guesser.html', {'form': form,

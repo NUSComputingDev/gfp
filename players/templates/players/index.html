@@ -23,6 +23,7 @@
         <h3>Enter VIP Code</h3>
         <form method="POST" action="{%url 'scoreboard:redemption' %}">
             {% csrf_token %}
+            <input type="hidden" name="next" value="/" />
             <div class="form-group">
                 {{ pointcode_form.code | addcss:"form-control input-lg"}}
             </div>
@@ -36,19 +37,34 @@
                 <td>SCORE</td>
             </thead>
             {% for score in scores %}
-            <tr>
-            <td>{{ score.name }}</td>
-                <td>{{ score.total_score }} </td>
-            </tr>
+                {% if score.name %}
+                    <tr>
+                        <td>{{ score.name }}</td>
+                        <td>{{ score.total_score }} </td>
+                    </tr>
+                {% endif %}
             {% endfor %}
 	    </table>
     </div>
     <div role="tabpanel" class="tab-pane fade" id="guess">
-        <ul>
-            {% for game in guessing_games %}
-            <li><a href="{% url 'scoreboard:guessing-form' id=game.id %}">{{ game.name }}</a></li>
-            {% endfor %}
-        </ul>
+        {% for gamesession in guessing_games %}
+            <div class="row">
+                <div class="col-md-12">
+                    <h4 class="text-center">{{ gamesession.game__name }}</h4>
+                    <form method="POST" action="{% url 'scoreboard:guessing-form' id=gamesession.id %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="next" value="/" />
+                        <div class="form-group">
+                            {{ gamesession.form.guess | addcss:"form-control input-lg"}}
+                        </div>
+                        <button type="submit" class="btn btn-default btn-block">Submit</button>
+                    </form>
+                </div>
+            </div>
+            {% if not forloop.last %}
+            <hr/>
+            {% endif %}
+        {% endfor %}
     </div>
   </div>
 

@@ -43,13 +43,6 @@ class SingleScoreInline(admin.TabularInline):
         'fk': ['player'],
     }
 
-    # Allow superuser to add score
-    def get_readonly_fields(self, request, obj=None):
-        if request.user.is_superuser:
-            return super(SingleScoreInline, self).get_readonly_fields(request, obj)
-        else:
-            return ('score', )
-
 class AggregatedScoreInline(admin.TabularInline):
     model = AggregatedScore
     fields = ('player', 'average_score', 'score', 'view_breakdown' )
@@ -174,7 +167,7 @@ class GameSessionAdmin(admin.ModelAdmin):
                 for obj in formset.deleted_objects:
                     obj.delete()
                 for instance in instances:
-                    if not request.user.is_superuser:
+                    if not (request.user.is_superuser or form.instance.game.changeable_score):
                         instance.score = None
                     instance.save()
                 formset.save_m2m()
