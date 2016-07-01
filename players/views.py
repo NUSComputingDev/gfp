@@ -5,8 +5,9 @@ from django.shortcuts import render, redirect
 from django.shortcuts import HttpResponseRedirect
 from django.contrib.auth.forms import AuthenticationForm
 
+from games.models import Guess
 from players.models import Player
-from scoreboard.forms import PointCodeForm
+from scoreboard.forms import PointCodeForm, GuessingForm
 from scoreboard.models import Game, GameSession
 
 
@@ -29,7 +30,19 @@ def index(request):
 
         total_score = sum(score['total_score'] for score in scores)
 
-        active_guessing_games = GameSession.objects.filter(game__game_type=Game.GUESSING, is_active=True)
+        active_guessing_games = GameSession.objects.filter(game__game_type=Game.GUESSING, is_active=True)\
+                                                   .values('id', 'game__name')
+
+        def get_forms(guess_game):
+            try:
+                guess_object = Guess.objects.get(player=request.user.player, game_session__id=guess_game['id'])
+                guess_game['form'] = GuessingForm(instance=guess_object)
+            except Guess.DoesNotExist:
+                guess_game['form'] = GuessingForm()
+
+            return guess_game
+
+        active_guessing_games = map(get_forms, active_guessing_games)
 
         pointcode_form = PointCodeForm()
 

@@ -94,6 +94,10 @@ def guess_view(request, id):
                 messages.info(request, 'Your guess has been successfully recorded!')
             else:
                 messages.error(request, 'Something went wrong!')
+
+            redirect_url = request.POST.get('next', None)
+            if redirect_url and is_safe_url(redirect_url):
+                return redirect(redirect_url)
         else:
             messages.warning(request, 'You are most likely a cheeky admin!')
     return render(request, 'scoreboard/guesser.html', {'form': form,
