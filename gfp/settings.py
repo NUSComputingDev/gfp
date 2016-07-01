@@ -9,13 +9,14 @@ https://docs.djangoproject.com/en/1.9/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/1.9/ref/settings/
 """
-
+import dj_database_url
 from django.contrib.messages import constants as messages
 
 import os
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
 
 
 # Quick-start development settings - unsuitable for production
@@ -28,6 +29,8 @@ SECRET_KEY = 'ygfj*wzf%bp_bb@r3gil@w56f*9n+!_vb)#+*ca#nh7i8bbuhi'
 DEBUG = True
 
 ALLOWED_HOSTS = []
+
+ENV_TYPE = os.getenv('GFP_ENV_TYPE', 'develop')
 
 
 # Application definition
@@ -80,15 +83,19 @@ WSGI_APPLICATION = 'gfp.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/1.9/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+if ENV_TYPE == 'production':
+    DATABASES = {
+        'default': dj_database_url.config(conn_max_age=600)
     }
-}
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        }
+    }
 
-LOGIN_URL = '/admin/login/'
-
+LOGIN_URL = '/player/login/'
 
 # Password validation
 # https://docs.djangoproject.com/en/1.9/ref/settings/#auth-password-validators
@@ -127,6 +134,16 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/1.9/howto/static-files/
 
 STATIC_URL = '/static/'
+
+STATIC_ROOT = os.path.join(PROJECT_ROOT, 'staticfiles')
+
+if ENV_TYPE == 'production':
+    LOGIN_URL = '/system' + LOGIN_URL
+    STATIC_URL = '/system' + STATIC_URL
+
+STATICFILES_DIRS = (
+    os.path.join(PROJECT_ROOT, 'static'),
+)
 
 # Messaging
 
