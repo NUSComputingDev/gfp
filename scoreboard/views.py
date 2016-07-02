@@ -16,12 +16,12 @@ from .forms import GuessingForm, PointCodeForm
 @staff_member_required
 def scoreboard_view(request):
 
-    overall_scores = Score.objects.all().annotate(player_id=F('player'),
-                                                  first_name=F('player__user__first_name'),
-                                                  last_name=F('player__user__last_name'))\
-                                        .values('player_id', 'first_name', 'last_name')\
-                                        .annotate(score=Sum('score'))\
-                                        .order_by('-score')
+    overall_scores = Score.objects.exclude(player_id=None).annotate(player_id=F('player'),
+                                                                    first_name=F('player__user__first_name'),
+                                                                    last_name=F('player__user__last_name'))\
+                                                          .values('player_id', 'first_name', 'last_name')\
+                                                          .annotate(score=Sum('score'))\
+                                                          .order_by('-score')
 
     games_list = []
     include_games = request.GET.get('includeindividual', False)
