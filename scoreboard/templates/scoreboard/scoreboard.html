@@ -1,6 +1,36 @@
 {% extends "index.html" %}
 
+{% block extrajs_before %}
+<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.7/angular.min.js"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/angular-sanitize/1.5.7/angular-sanitize.min.js"></script>
+<script>
+var myScoreboardApp = angular.module('scoreboardApp', ['ngSanitize'])
+
+myScoreboardApp.controller('ScoreboardController', ['$scope', '$http', '$timeout', function($scope, $http, $timeout) {
+  $scope.reload = function () {
+    $http.get('{% url 'scoreboard:scoreboard' %}?partial=1').
+        success(function (data) {
+          $scope.scoreboard = data;
+      });
+
+    $timeout(function(){
+      $scope.reload();
+    },30000)
+  };
+  $scope.reload();
+}]);
+
+angular.element(document).ready(function() {
+  angular.bootstrap(document, ['scoreboardApp']);
+});
+</script>
+{% endblock %}
+
 {% block body %}
+{% if not individualgames %}
+<div ng-controller="ScoreboardController" ng-bind-html="scoreboard">
+</div>
+{% else %}
 <ul class="nav nav-tabs" role="tablist">
     <li role="presentation"><a href="#tab-overall" aria-controls="tab-overall" role="tab" data-toggle="tab">Overall</a></li>
 {% for value in games %}
@@ -11,8 +41,8 @@
 	<div role="tabpanel" class="tab-pane" id="tab-overall">
 	<table class="table table-bordered">
 		<thead>
-			<td>NAME</td>
-			<td>SCORE</td>
+			<th>NAME</th>
+			<th>SCORE</th>
 		</thead>
 		{% for score in overall %}
 		<tr>
@@ -41,4 +71,5 @@
 	</div>
 	{% endfor %}
 </div>
+{% endif %}
 {% endblock %}
