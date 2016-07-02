@@ -2,39 +2,35 @@
 {% load addcss %}
 
 {% block body %}
-<div class="well">
-  <div>
+<div class="well well-sm">
+  <h3 class="text-center" style="margin: 10px 0px">Overall Score: {{ total }}</h3>
+</div>
 
-  <!-- Nav tabs -->
-  <ul class="nav nav-tabs" role="tablist">
-    <li role="presentation" class="active"><a href="#home" aria-controls="home" role="tab" data-toggle="tab">Home</a></li>
-    <li role="presentation"><a href="#scores" aria-controls="scores" role="tab" data-toggle="tab">Game Scores</a></li>
-    <li role="presentation"><a href="#guess" aria-controls="guess" role="tab" data-toggle="tab">Guessing Games</a></li>
-  </ul>
-
-  <!-- Tab panes -->
-  <div class="tab-content">
-    <div role="tabpanel" class="tab-pane fade in active" style="text-align: center" id="home">
-        <h2>Welcome, {{ player }}</h2>
-        <hr/>
-        <h3>Your Overall Score</h3>
-        <h3>{{ total }}</h3>
-        <hr/>
-        <h3>Enter VIP Code</h3>
+<div class="panel panel-default">
+    <div class="panel-heading text-center">
+        <b>Enter VIP Codes</b>
+    </div>
+    <div class="panel-body">
         <form method="POST" action="{%url 'scoreboard:redemption' %}">
             {% csrf_token %}
             <input type="hidden" name="next" value="/" />
             <div class="form-group">
                 {{ pointcode_form.code | addcss:"form-control input-lg"}}
             </div>
-            <button type="submit" class="btn btn-default">Submit</button>
+            <button type="submit" class="btn btn-default btn-block">Submit</button>
         </form>
     </div>
-    <div role="tabpanel" class="tab-pane fade" id="scores">
-        <table class="table table-bordered">
+</div>
+
+<div class="panel panel-default">
+    <div class="panel-heading text-center">
+        <b>Game Scores</b>
+    </div>
+    <div class="panel-body">
+        <table class="table table-bordered table-striped">
             <thead>
-                <td>GAME</td>
-                <td>SCORE</td>
+                <th>GAME</th>
+                <th>SCORE</th>
             </thead>
             {% for score in scores %}
                 {% if score.name %}
@@ -46,7 +42,13 @@
             {% endfor %}
 	    </table>
     </div>
-    <div role="tabpanel" class="tab-pane fade" id="guess">
+</div>
+
+<div class="panel panel-default">
+    <div class="panel-heading text-center">
+        <b>Guessing Games</b>
+    </div>
+    <div class="panel-body">
         {% for gamesession in guessing_games %}
             <div class="row">
                 <div class="col-md-12">
@@ -66,8 +68,5 @@
             {% endif %}
         {% endfor %}
     </div>
-  </div>
-
-</div>
 </div>
 {% endblock %}
