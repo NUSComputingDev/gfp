@@ -13,6 +13,8 @@
         <link rel="stylesheet" href="css/main.css">
 
         <script src="js/vendor/modernizr-2.8.3.min.js"></script>
+        {% block extrajs_before %}
+        {% endblock %}
     </head>
     <body>
         <!--[if lt IE 8]>
@@ -80,5 +82,8 @@
         <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
         <script src="js/plugins.js"></script>
         <script src="js/main.js"></script>
+        {% block extrajs %}
+
+        {% endblock %}
     </body>
 </html>

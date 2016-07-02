@@ -15,9 +15,6 @@ from .forms import GuessingForm, PointCodeForm
 
 @staff_member_required
 def scoreboard_view(request):
-    games = Game.objects.all()
-
-    games_list = games.values('pk', 'name')
 
     overall_scores = Score.objects.all().annotate(player_id=F('player'),
                                                   first_name=F('player__user__first_name'),
@@ -26,17 +23,28 @@ def scoreboard_view(request):
                                         .annotate(score=Sum('score'))\
                                         .order_by('-score')
 
-    for game in games_list:
-        filtered_game_sessions = GameSession.objects.all().filter(game__pk=game['pk'])
-        score_list = filtered_game_sessions.annotate(player_id=F('score__player'),
-                                                     first_name=F('score__player__user__first_name'),
-                                                     last_name=F('score__player__user__last_name'))\
-                                           .values('player_id', 'first_name', 'last_name')\
-                                           .annotate(score=Sum('score__score'))\
-                                           .order_by('-score')
-        game['score_list'] = score_list
+    games_list = []
+    include_games = request.GET.get('includeindividual', False)
 
-    return render(request, 'scoreboard/scoreboard.html', {'games': games_list, 'overall': overall_scores})
+    if include_games:
+        games = Game.objects.all()
+        games_list = games.values('pk', 'name')
+
+        for game in games_list:
+            filtered_game_sessions = GameSession.objects.all().filter(game__pk=game['pk'])
+            score_list = filtered_game_sessions.annotate(player_id=F('score__player'),
+                                                         first_name=F('score__player__user__first_name'),
+                                                         last_name=F('score__player__user__last_name'))\
+                                               .values('player_id', 'first_name', 'last_name')\
+                                               .annotate(score=Sum('score__score'))\
+                                               .order_by('-score')
+            game['score_list'] = score_list
+
+    if request.GET.get('partial', False):
+        return render(request, 'scoreboard/scoreboard_partial.html', {'overall': overall_scores})
+
+    return render(request, 'scoreboard/scoreboard.html', {'games': games_list, 'overall': overall_scores,
+                                                          'individualgames': include_games})
 
 
 @login_required
@@ -100,5 +108,4 @@ def guess_view(request, id):
                 return redirect(redirect_url)
         else:
             messages.warning(request, 'You are most likely a cheeky admin!')
-    return render(request, 'scoreboard/guesser.html', {'form': form,
-                                                       'game': game_name})
+    return render(request, 'scoreboard/guesser.html', {'form': form, 'game': game_name})
